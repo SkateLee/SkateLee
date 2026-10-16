@@ -12,7 +12,7 @@
 🚀 **正在寻找 AI Agent 开发实习机会 · 可立即到岗 · 可实习 6 个月以上**
 
 [![GitHub](https://img.shields.io/badge/GitHub-SkateLee-181717?style=for-the-badge&logo=github)](https://github.com/SkateLee)
-[![个人博客](https://img.shields.io/badge/个人博客-withsk8lee.top-0A66C2?style=for-the-badge&logo=googlechrome&logoColor=white)](https://www.withsk8lee.top)
+[![个人博客](https://img.shields.io/badge/个人博客-withsk8lee.top-0A66C2?style=for-the-badge&logo=googlechrome&logoColor=white)](http://117.72.221.82/)
 [![邮箱](https://img.shields.io/badge/邮箱-联系我-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:liliubing103@163.com)
 
 </div>
