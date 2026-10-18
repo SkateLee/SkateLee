@@ -40,146 +40,107 @@
 
 ## 🚀 精选项目
 
-### 01 · MultiCC — 通用 Agent 运行框架与 Skills 自进化平台
+### 01 · MultiCC — 参考 Claude Code 架构的本地通用 Agent Harness
 
-**构建具备状态管理、灵活扩展与持续进化能力的通用 AI Agent 运行框架。**
+**从零构建可扩展、可持续运行、安全可控的本地 Agent Harness，支持复杂长程任务执行。**
 
 [![源代码](https://img.shields.io/badge/源代码-MultiCC-181717?style=flat-square&logo=github)](https://github.com/SkateLee/multiCC)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
 ![MCP](https://img.shields.io/badge/MCP-工具集成-444444?style=flat-square)
-![Skills](https://img.shields.io/badge/Skills-自进化-6A5ACD?style=flat-square)
+![Multi-Agent](https://img.shields.io/badge/Multi--Agent-并行编排-6A5ACD?style=flat-square)
 
-`Python` `asyncio` `OpenAI/Anthropic SDK` `MCP` `Tool Calling` `Skills` `Docker`
+`Python` `ReAct` `OpenAI/Anthropic SDK` `MCP` `Skills` `Multi-Agent` `Sandbox`
 
 #### 📖 项目概述
 
-MultiCC 是一个参考 Claude Code 类架构、从零实现的 Python 通用 Agent 运行框架（Agent Harness）。
+MultiCC 参考 Claude Code 的架构设计与运行机制，从零设计并实现本地通用 Agent Harness。基于 **ReAct** 构建 Agent 执行循环，采用**五层分层架构**，集成多模型适配、MCP 工具扩展、Skills 动态加载、上下文管理、权限控制与多 Agent 协作能力，为 LLM 提供可扩展、可持续运行、安全可控的本地任务执行环境。
 
-项目关注传统大模型 Agent 在长程任务中面临的 **上下文受限、工具执行安全、任务状态丢失、经验无法复用以及持续学习能力不足** 等问题。
+#### 👨‍💻 个人职责
 
-围绕 Agent 运行时、上下文工程、记忆管理和 Skills 进化设计统一执行框架，使 Agent 能够在复杂任务中持续推进，并从执行反馈中沉淀可复用能力。
+- 独立负责 Agent Harness 的整体架构设计、核心机制选型与模块拆分，借助 Codex 辅助完成代码实现与调试，构建模型调用、工具执行、上下文管理与任务编排的完整运行链路。
+- 设计跨会话记忆与上下文管理系统，实现 **JSONL 会话持久化、LLM 自动记忆提取及项目级指令文件分级加载**，支持长周期任务执行。
+- 搭建 Agent 自动化评测体系，基于 **SWE-bench-Live** 验证代码任务执行能力，自主设计上下文信息保留测试，通过评测反馈持续优化执行策略。
 
 #### 🔧 核心工程亮点
 
-**1. Agent 运行框架 — 统一运行时与工具编排**
+**1. MCP 工具延迟加载 — 提升工具生态扩展能力**
 
-- 自主实现 Agent 执行循环，统一处理模型推理、工具调用解析、权限检查、工具执行、结果回写与会话持久化。
-- 支持 OpenAI / Anthropic 双协议、MCP 工具接入、规划模式（Plan Mode）、子 Agent 和会话恢复。
-- 设计工具执行权限机制，对文件操作和 Shell 命令执行进行应用层控制。
-- 支持上下文压缩与任务状态维护，提高长程任务执行的连续性。
+- 设计工具发现与按需加载机制，避免将全量工具 Schema 注入上下文。
+- 百级工具场景下，**工具描述 Token 占用降低 85%**，提升上下文利用率。
 
-**2. 自主记忆折叠（Autonomous Memory Folding）**
+**2. 两层渐进式上下文压缩 — 支撑长程任务**
 
-- 设计主动式上下文折叠机制，将上下文压缩扩展为任务状态重组与策略重启能力。
-- 基于 `episode_memory`、`working_memory`、`tool_memory` 分层保存任务进度、工作状态与工具经验。
-- Agent 可通过 `compact_context` 主动重组执行上下文，在上下文压力、工具失败或策略变化时继续推进任务。
+- 设计两层渐进式上下文压缩策略，兼顾上下文窗口压力与任务关键信息保留。
+- 支持 **8 小时以上连续 Agent 会话**，不丢失关键上下文。
 
-**3. Skills 自进化 — 反馈驱动的能力演化**
+**3. 五层安全执行机制 — 降低重复审批开销**
 
-- 设计用户反馈驱动的 Skills 在线演化链路。
-- 通过待处理反馈窗口（Pending Window）捕获用户后续反馈，完成候选 Skills 的抽取与维护。
-- 支持相似检索、`add / merge / discard` 决策及 `SKILL.md` 持久化。
-- 采用 Memory + Skills 分层机制，区分项目事实、用户偏好和可复用任务流程。
+- 构建分层权限控制与工具执行确认机制，将单次会话权限弹窗由**平均 30 次降至 5 次以内**。
+- 可选启用 OS 级沙箱作为额外安全保障，以内核级隔离支持 Agent 全自动模式下的安全执行。
 
-**4. 能力评测与演化审计**
+**4. 多 Agent 并行编排 — 提升复杂任务效率**
 
-- 实现基于执行回放（Replay）、规则评测和 LLM-as-Judge 的 Skills 质量评测机制。
-- 支持候选版本试运行、优胜版本登记、能力来源追踪与版本对比。
-- 使 Skills 演化过程具备可回放、可比较和可审计能力。
+- 设计多 Agent 任务拆分、并行执行与文件级隔离机制，缓解单 Agent 上下文和串行执行瓶颈。
+- 跨文件重构任务耗时相比单 Agent **降低约 60%**。
 
-#### 📊 阶段性评测结果
+**5. 评测驱动优化 — 通过测试发现上下文缺陷**
 
-项目阶段性评测以 HiRA 为基线，在 GAIA / HLE 共 665 道任务上进行对比：
-
-| 评测基准 | 基线（HiRA） | MultiCC | 提升幅度 |
-|:---|---:|---:|---:|
-| GAIA Pass@1 | 42.1% | **53.3%** | **+11.2 个百分点** |
-| HLE Pass@1 | 13.6% | **20.2%** | **+6.6 个百分点** |
-
-**消融实验**
-
-关闭自主记忆折叠机制后，GAIA Pass@1 从 **53.3% 降至 44.7%**，体现了该机制在当前实验设置下对长程任务执行的积极作用。
-
-> 以上为项目阶段性实验记录；公开仓库当前提供运行代码与测试，但尚未发布完整的可复现基准跑分数据及实验环境。
+- 基于 **SWE-bench-Live** 搭建评测流水线，验证 Agent 的 Bug 定位与修复能力。
+- 自主设计上下文信息保留测试，定位并修复压缩摘要模板缺陷，**信息保留率从 17% 提升至 100%**。
 
 **🔗 [在 GitHub 查看 MultiCC 项目 →](https://github.com/SkateLee/multiCC)**
 
 ---
 
-### 02 · Globex Agent — 跨境购物多智能体系统
+### 02 · FlowFusion — Workflow-Agent 混合架构的电商售后智能体系统
 
-**面向跨境购物场景，构建集多智能体协作、持久化记忆与执行过程可观测性于一体的智能体应用系统。**
+**以确定性 Workflow 保障业务流程，以 Agent 实现动态应答，兼顾售后自动化、检索质量与幻觉治理。**
 
-[![源代码](https://img.shields.io/badge/源代码-Globex_Agent-181717?style=flat-square&logo=github)](https://github.com/SkateLee/globex-agent)
-![AgentScope](https://img.shields.io/badge/AgentScope-2.x-6A5ACD?style=flat-square)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
-![AG-UI](https://img.shields.io/badge/AG--UI-流式交互-008080?style=flat-square)
+[![项目仓库](https://img.shields.io/badge/GitHub-FlowFusion-181717?style=flat-square&logo=github)](https://github.com/SkateLee/FlowFusion)
+![LangGraph](https://img.shields.io/badge/LangGraph-工作流编排-1C3C3C?style=flat-square)
+![RAG](https://img.shields.io/badge/RAG-混合检索-4479A1?style=flat-square)
+![Langfuse](https://img.shields.io/badge/Langfuse-评测与追踪-6A5ACD?style=flat-square)
 
-`Python` `AgentScope 2.x` `FastAPI` `React` `AG-UI` `Qdrant` `Redis` `LangFuse` `Docker`
+`Python` `LangChain` `LangGraph` `RAG` `Milvus` `MCP` `Langfuse` `MySQL`
 
 #### 📖 项目概述
 
-Globex Agent 是一个面向跨境购物场景的对话式智能体系统，支持自然语言商品检索、多商品比较、个性化偏好管理、交易确认以及 Agent 执行过程可视化。
+FlowFusion 面向电商售后场景设计并实现智能客服系统，以 **确定性 Workflow 与 Agent 混合架构**为核心，通过 LangGraph 编排意图分流、RAG 混合检索、证据校验及智能应答，构建覆盖**九类业务意图**的客服处理链路，并结合可观测评测、数据飞轮及主题分类微调，实现知识库持续更新与售后问题自动化处理。
 
-项目围绕 **多 Agent 协作、上下文治理、长期记忆、混合检索、执行可靠性与可观测性** 展开工程设计。
+#### 👨‍💻 个人职责
 
-当前公开版本基于 AgentScope 2.x 构建主 Agent（MainAgent）、搜索 Agent（SearchAgent）与交易 Agent（TradeAgent）架构，使用 FastAPI + AG-UI + React 实现前后端交互。
-
-#### 🖥️ 系统演示
-
-<img src="https://github.com/user-attachments/assets/7851f1f8-7ea2-47fa-a614-eac015112060" alt="Globex Agent 系统界面" width="700">
+- 独立负责智能客服系统整体架构设计、技术选型与核心模块拆分，借助 Codex 辅助完成代码实现与调试，构建确定性 Workflow 与 Agent 协同执行的售后客服链路。
+- 设计基于 LangGraph 的对话主链路，编排意图分流、混合检索、生成前证据校验与 Agent 应答，实现流程控制与动态决策的职责分离。
+- 搭建 RAG 检索、意图识别与置信度阈值评估体系，通过离线评测与错误案例分析，持续优化检索策略、Prompt 及 Agent 应答质量。
 
 #### 🔧 核心工程亮点
 
-**1. 多智能体任务编排（Multi-Agent Orchestration）**
+**1. 混合检索与精排优化 — 提升证据召回质量**
 
-- 设计主 Agent 与专业子 Agent 协作机制，对搜索、商品决策和交易能力进行职责划分。
-- 当前公开版本通过 MainAgent 直接处理简单任务，并按需调度 SearchAgent / TradeAgent。
-- 根据任务复杂度和工具属性进行任务拆分，控制多 Agent 上下文负担及协作开销。
+- 基于 **BGE-M3** 语义向量与 **BM25** 关键词双路召回，结合 **RRF** 名次融合及 **BGE-Reranker** 精排。
+- 在自建 300 题五桶评估集的 **240 道可作答题**上，**Recall@5 达 98%、MRR 达 89.4%、答案覆盖度 97%**；人工逐条核验的**幻觉率为 0.7%**。
 
-**2. 上下文工程 — 分层治理与执行恢复**
+**2. 四信号置信度与幻觉治理 — 防止错误售后承诺**
 
-- 设计上下文边界压缩策略，减少历史对话和工具返回带来的 Token 膨胀。
-- 对工具结果进行分层保存，将完整证据与模型推理所需信息分离。
-- 支持上下文整理、摘要和历史证据回查，兼顾任务连续性与信息完整性。
-- 结合执行循环检测、重试、熔断等机制，提升复杂任务的执行可靠性。
+- 设计四信号加权置信度评分机制，在 Agent 应答前校验证据充分性。
+- 对低置信度问题执行人工转接，避免证据不足时作出错误业务承诺；测试中**误放率 0%、误拦率 17%**。
 
-**3. 长期记忆与 Skills 管理**
+**3. Workflow-Agent 混合编排 — 确保关键流程不被跳过**
 
-- 实现用户偏好、商品黑名单和历史选择的跨会话持久化。
-- 基于语义检索按需召回长期记忆，避免将完整历史信息重复注入上下文。
-- 支持记忆更新、删除和变更记录，敏感业务修改引入明确的用户确认。
-- 支持用户个人 Skills 的 Markdown 编写、版本管理和按需加载。
+- 基于 LangGraph 构建**九类意图到五个出口**的确定性分流状态机。
+- 检索、订单查询和政策校验等必经步骤由 Workflow 统一调度，Agent 仅在证据齐备后负责动态判断与应答。
 
-**4. 混合检索 — 商品召回与排序优化**
+**4. 分层上下文治理 — 改善长对话信息保留**
 
-- 构建商品语义检索、关键词检索和重排序（Reranking）相关能力。
-- 当前公开版本以 Embedding + Qdrant + Reranker 为主要检索链路。
-- 实现 BM25 / RRF 混合检索能力，并提供可配置开关。
-- 通过商品 ID 精确查询与业务约束过滤，提高商品结果的可控性。
+- 设计三层上下文管理机制，结合异步分段摘要与工具结果裁剪，减少长对话上下文冗余。
+- **长对话关键信息保留率提升 50%**。
 
-**5. 可观测性与实时交互**
+**5. 数据飞轮与知识自迭代 — 持续补齐知识缺口**
 
-- 通过 OpenTelemetry / LangFuse 支持模型、Agent、工具调用的全链路追踪关联与分析。
-- 基于 AG-UI 事件协议实现流式交互，展示任务进度、工具执行记录和结构化商品卡片。
-- 设计会话持久化与事件恢复机制，支持刷新页面后恢复已保存的执行记录。
-- 通过显式授权、幂等操作与事务约束保护订单和用户偏好变更。
+- 设计三入口数据飞轮，将线上未解决问题、低置信度应答及人工反馈沉淀为待处理样本。
+- 经人工审核后增量更新知识库，持续提升售后知识的完备性。
 
-#### 📈 阶段性工程优化效果
-
-项目开发阶段记录的部分工程优化结果：
-
-| 优化项目 | 阶段性测试结果 |
-|:---|:---|
-| 复杂任务响应耗时 | **降低 65%** |
-| 10+ 轮对话 Token 消耗 | **降低 30%** |
-| 任务完成率 | **71% → 89%** |
-| Top-100 商品召回相关率 | **提升 22%** |
-| 不良案例（Badcase）排查耗时 | **30 分钟 → 5 分钟** |
-
-> 上述指标来自项目开发阶段的测试记录，不代表当前公开版本的正式验收结果。当前版本的技术实现、测试状态与限制以仓库文档为准。
-
-**🔗 [在 GitHub 查看 Globex Agent 项目 →](https://github.com/SkateLee/globex-agent)**
+**🔗 [在 GitHub 查看 FlowFusion 项目 →](https://github.com/SkateLee/FlowFusion)**
 
 ---
 
